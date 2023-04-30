@@ -14,6 +14,8 @@
 // 
 
 #include "OST.h"
+#include "ComputeNode.h"
+#include "OSS.h"
 
 namespace fattree {
 
@@ -31,8 +33,10 @@ OST::~OST(){
 
 void OST::initialize()
 {
+//    queueIsFull = false;
     qLenSignal = registerSignal("queueLen");
     staySignal = registerSignal("stayTime");
+    waitingSignal = registerSignal("waitingTime");
 }
 
 void OST::handleMessage(cMessage *msg)
@@ -41,7 +45,6 @@ void OST::handleMessage(cMessage *msg)
 
     if(!msg->isSelfMessage()){
         int gate_id(intuniform(0, gateSize("port$o")-1, 0));  // randomly select an OSS connected to it
-        simtime_t del_time = std::max(gate("port$o", gate_id)->getTransmissionChannel()->getTransmissionFinishTime(), simTime());
         req->setArriveModule_time(simTime());
         emit(qLenSignal, ost_buffer->getLength());
 
@@ -54,32 +57,44 @@ void OST::handleMessage(cMessage *msg)
         }
 
         req->setPort_index(gate_id);
-        if(ost_buffer->isEmpty()){
+        double proc_time;
+        if(ost_buffer->getLength() < par("proc_num").intValue()){
             if(req->getWork_type() == 'r'){
-                req->setLeaveModule_time(del_time + par("read_latency").doubleValue() * (req->getData_size() / (1024.0*1024.0)));
+                proc_time = par("read_latency").doubleValue();
+                req->setLeaveModule_time(req->getArriveModule_time() + proc_time * (req->getData_size() / (1024.0*1024.0)));
             }else{
-                req->setLeaveModule_time(del_time + par("write_latency").doubleValue() * (req->getData_size() / (1024.0*1024.0)));
+                proc_time = par("write_latency").doubleValue();
+                req->setLeaveModule_time(req->getArriveModule_time() + proc_time * (req->getData_size() / (1024.0*1024.0)));
             }
         }else{
             auto last_req = check_and_cast<Request*>(ost_buffer->back());
             if(req->getWork_type() == 'r'){
-                req->setLeaveModule_time(last_req->getLeaveModule_time() + par("read_latency").doubleValue() * (req->getData_size() / (1024.0*1024.0)));
+                proc_time = par("read_latency").doubleValue();
+                req->setLeaveModule_time(last_req->getLeaveModule_time() + proc_time * (req->getData_size() / (1024.0*1024.0)));
             }else{
-                req->setLeaveModule_time(last_req->getLeaveModule_time() + par("write_latency").doubleValue() * (req->getData_size() / (1024.0*1024.0)));
+                proc_time = par("write_latency").doubleValue();
+                req->setLeaveModule_time(last_req->getLeaveModule_time() + proc_time * (req->getData_size() / (1024.0*1024.0)));
             }
         }
+        req->setFinished(true);
+        req->setProc_time(proc_time * req->getData_size() / (1024.0*1024.0));
         scheduleAt(req->getLeaveModule_time(), req->dup());
         ost_buffer->insert(req);
 
     }else{
-        ost_buffer->pop(); // send the copy of scheduled msg above, so pop one in queue.
-        simtime_t new_del_time = std::max(gate("port$o", req->getPort_index())->getTransmissionChannel()->getTransmissionFinishTime(), simTime());
-        emit(staySignal, (new_del_time-req->getArriveModule_time()).dbl());
-        sendDelayed(req, new_del_time-simTime(), "port$o", req->getPort_index());
-    }
+        delete(ost_buffer->pop()); // send the copy of scheduled msg above, so pop one in queue.
+        simtime_t new_del_time = simTime();
+        if(gate("port$o", req->getPort_index())->getChannel()->isTransmissionChannel())
+            new_del_time = std::max(gate("port$o", req->getPort_index())->getTransmissionChannel()->getTransmissionFinishTime(), new_del_time);
 
-//    if(ost_buffer->getLength())
-//        EV << "OST queue: " << ost_buffer->getLength() << " ??????????????????????????\n";
+        //        OSS* oss = check_and_cast<OSS*>(gate("port$o", req->getPort_index())->getNextGate()->getOwnerModule());
+        //        if(!oss->queueIsFull){
+        sendDelayed(req, new_del_time-simTime(), "port$o", req->getPort_index());
+        emit(staySignal, (new_del_time - req->getArriveModule_time()).dbl());
+        emit(waitingSignal, (new_del_time-req->getArriveModule_time()).dbl() - req->getProc_time());
+        //        }else
+        //            delete req;
+    }
 
 }
 
@@ -87,7 +102,7 @@ uint64_t OST::getDataSizeInQueue(){
     uint64_t total_size(0);
     for (cQueue::Iterator iter(*ost_buffer); !iter.end(); iter++) {
         Request* req = check_and_cast<Request*>(*iter);
-        total_size += req->getByteLength(); // Actual data size
+        total_size += req->getData_size(); // Actual data size in queue has read from ost(but still in buffer); or to be written to ost(also still in buffer)
     }
     return total_size;
 }

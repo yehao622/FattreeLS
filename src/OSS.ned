@@ -21,13 +21,16 @@ package fattree;
 simple OSS
 {
     parameters:
-//        int port_num = default(2);
+        int proc_num = default(2);
+        int buffer_size_limit @unit(MiB) = default(8192MiB);
         volatile double latency @unit(s) = default(exponential(1.0e-7s));
         @display("i=device/device;is=n");
         @signal[queueLen](type="int");
         @signal[stayTime](type="double");
-        @statistic[queueLen](title="Queue Length"; record=histogram,stats,vector);
-        @statistic[stayTime](title="Time staying in OSS"; record=histogram,stats,vector);
+        @signal[waitingTime](type="double");
+        @statistic[queueLen](title="Queue Length"; record=histogram);
+        @statistic[stayTime](title="Time staying in OSS"; record=stats,vector);
+        @statistic[waitingTime](title="Queueing time in OSS"; record=stats,vector);
     gates:
         inout port[];
 }

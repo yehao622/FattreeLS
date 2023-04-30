@@ -17,10 +17,17 @@ namespace fattree;
 
 packet Request {
     char work_type;
+    bool finished;
+    bool ckp_launched;
     short port_index;
-    int64_t data_size;
+    uint32_t id;
+    uint32_t master_id;
+    uint32_t num_proc; 
+    uint64_t data_size;
+    double proc_time;
     string src_addr;
     string des_addr;
+    string master_id_addr;
     string next_hop_addr;
     simtime_t generate_time;
     simtime_t arriveModule_time;

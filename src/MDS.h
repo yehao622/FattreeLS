@@ -32,12 +32,16 @@ class MDS : public cSimpleModule
     virtual ~MDS();
     void initCollectCompInfo(std::string, std::string);
     void addOSTs(std::string);
+    void addCNs(std::string);
     std::string randGetOST();
+    std::string randGetCN(std::string);
+    int getTotalNumCN();
   protected:
     std::map<int, int64_t> queue_data_size; // <port, data_size_in_queue> for OSS and Cores
     std::unordered_map<std::string, int> conn_map;
     std::unordered_map<std::string, std::unordered_set<std::string>> comp_map;
     std::vector<std::string> all_OSTs;
+    std::vector<std::string> all_CNs;
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish();

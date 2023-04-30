@@ -21,14 +21,17 @@ package fattree;
 simple OST
 {
     parameters:
-//        int port_num = default(2);
+		int proc_num = default(2);
+		int buffer_size_limit @unit(MiB) = default(1024MiB);
         volatile double read_latency @unit(s) = default(exponential(1.43e-3s)); // read BW 1 / 1.43e-3 MB/s
         volatile double write_latency @unit(s) = default(exponential(2.4e-3s)); // write BW 1 / 2.4e-3 MB/s 
         @display("i=device/disk");
         @signal[queueLen](type="int");
         @signal[stayTime](type="double");
-        @statistic[queueLen](title="Queue Length"; record=histogram,stats,vector);
-        @statistic[stayTime](title="Time staying in OST"; record=histogram,stats,vector);
+        @signal[waitingTime](type="double");
+        @statistic[queueLen](title="Queue Length"; record=histogram);
+        @statistic[stayTime](title="Time staying in OST"; record=stats,vector);
+        @statistic[waitingTime](title="Queueing time in OST"; record=stats,vector);
     gates:
         inout port[];
 }

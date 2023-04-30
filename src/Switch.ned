@@ -22,14 +22,18 @@ package fattree;
 simple Switch
 {
     parameters:
+        int proc_num = default(2);
+        volatile int buffer_size_limit @unit(MiB) = default(64MiB);
         volatile double core_latency @unit(s) = default(exponential(1.0e-7s));
         volatile double aggr_latency @unit(s) = default(exponential(1.0e-7s));
         volatile double edge_latency @unit(s) = default(exponential(1.0e-7s));
         @display("i=abstract/router;is=n");
         @signal[queueLen](type="int");
         @signal[stayTime](type="double");
-        @statistic[queueLen](title="Queue Length"; record=histogram,stats,vector);
-        @statistic[stayTime](title="Time staying in Switch"; record=histogram,stats,vector);
+        @signal[waitingTime](type="double");
+        @statistic[queueLen](title="Queue Length"; record=histogram);
+        @statistic[stayTime](title="Time staying in Switch"; record=stats,vector);
+        @statistic[waitingTime](title="Queueing time in Switch"; record=stats,vector);
     gates:
         inout port[];
 }

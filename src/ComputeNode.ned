@@ -22,19 +22,29 @@ simple ComputeNode
 {
     parameters:
         bool sendInitialMessage = default(false);
-        double read_percent = default(0.5);
+        double data_size = default(1.0);
+        int proc_num = default(2);
+        int ckp_cn_num = default(3);
+        int ckp_ranks_per_cn = default(4);
+        double read_percent = default(1.0);
+        double to_cn_chance = default(1.0);
+//        double to_ost_chance = default(0.0);
+        double ckp_proc_chance = default(0.0);
         volatile double sendInterval @unit(s) = default(exponential(1.0e-2s));
+//        volatile double sendReadInterval @unit(s) = default(exponential(1.0e-2s));
+//        volatile double sendWriteInterval @unit(s) = default(exponential(1.0e-2s));
+        volatile double read_latency @unit(s) = default(exponential(1.66e-4s));
+        volatile double write_latency @unit(s) = default(exponential(2.4e-4s));
+        int buffer_size_limit @unit(MiB) = default(1024MiB);
         @display("i=device/server2;is=n");
-        @signal[throughput](type="double");
+        @signal[queueLen](type="int");
         @signal[readDurationInSystem](type="double");
         @signal[writeDurationInSystem](type="double");
-        @signal[readThroughput](type="double");
-        @signal[writeThroughput](type="double");
-        @statistic[throughput](title="All throughput"; record=histogram,stats,vector);
-        @statistic[readDurationInSystem](title="Time duration of read operation in the system"; record=histogram,vector);
-        @statistic[writeDurationInSystem](title="Time duration of write operation in the system"; record=histogram,vector);
-        @statistic[readThroughput](title="Throughput of read operation in the system"; record=vector);
-        @statistic[writeThroughput](title="Throughput of write operation in the system"; record=vector);
+        @signal[waitingTime](type="double");
+        @statistic[queueLen](title="Queue Length"; record=histogram);
+        @statistic[readDurationInSystem](title="Time duration of read operation in the system"; record=stats,vector);
+        @statistic[writeDurationInSystem](title="Time duration of write operation in the system"; record=stats,vector);
+        @statistic[waitingTime](title="Queueing time in CN"; record=stats,vector);
     gates:
         inout port[];
 }

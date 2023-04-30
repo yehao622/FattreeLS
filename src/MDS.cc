@@ -28,6 +28,7 @@ MDS::~MDS(){
     conn_map.clear();
     comp_map.clear();
     all_OSTs.resize(0);
+    all_CNs.resize(0);
 }
 
 void MDS::initCollectCompInfo(std::string child, std::string parent){
@@ -44,7 +45,6 @@ void MDS::initialize()
 
         queue_data_size[i] = 0;
     }
-
 }
 
 void MDS::handleMessage(cMessage *msg)
@@ -58,13 +58,14 @@ void MDS::handleMessage(cMessage *msg)
 }
 
 std::string MDS::randChoose(std::unordered_set<std::string>& name_set){
-    int64_t min_data_size(INT64_MAX);
+    int rand_id = intuniform(0, name_set.size()-1, 0);
+    auto it = name_set.begin();
+    for(int i=0; i<rand_id; i++, it++){}
+    return *it;
 
+    // belowing part tries to select the least data size in queue
+    int64_t min_data_size(INT64_MAX);
     if( std::regex_match(*name_set.begin(), std::regex("oss\\[[0-9]+\\]")) ){
-      /*  int rand_id = intuniform(0, name_set.size()-1, 0);
-        auto it = name_set.begin();
-        for(int i=0; i<rand_id; i++, it++){}
-        return *it*/;
         std::string dest_oss;
         for(auto oss_name:name_set){
             OSS* oss = check_and_cast<OSS*>(getModuleByPath(oss_name.c_str()));
@@ -112,10 +113,29 @@ void MDS::addOSTs(std::string ost_name){
         all_OSTs.push_back(ost_name);
 }
 
+void MDS::addCNs(std::string cn_name){
+    if(std::find(all_CNs.begin(), all_CNs.end(), cn_name) == all_CNs.end())
+        all_CNs.push_back(cn_name);
+}
+
 std::string MDS::randGetOST(){ // for compute node randomly generating OST target.
     if(all_OSTs.empty())
         throw cRuntimeError("No OST is collected in MDS module!\n");
     return all_OSTs[intuniform(0, all_OSTs.size()-1, 0)];
+}
+
+int MDS::getTotalNumCN(){
+    return all_CNs.size();
+}
+
+std::string MDS::randGetCN(std::string src_cn_name){ // for compute node randomly generating OST target.
+    if(all_CNs.empty())
+        throw cRuntimeError("No CN is collected in MDS module!\n");
+
+    std::string cn_name = all_CNs[intuniform(0, all_CNs.size()-1, 0)];
+    while(cn_name == src_cn_name)
+        cn_name = all_CNs[intuniform(0, all_CNs.size()-1, 0)];
+    return cn_name;
 }
 
 void MDS::finish(){}

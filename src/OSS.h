@@ -21,8 +21,11 @@ class OSS : public cSimpleModule
     OSS();
     virtual ~OSS();
     bool findOST(std::string);
+//    bool queueIsFull;
     uint64_t getDataSizeInQueue();
   protected:
+    double waitingSignal;
+    std::map<int, int64_t> queue_data_size; // <port, data_size_in_queue>
     std::unordered_map<std::string, int> conn_map;
     cQueue* oss_buffer;
     simsignal_t qLenSignal;
@@ -31,6 +34,7 @@ class OSS : public cSimpleModule
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
     int randChoose(std::string layer);
+    int geatRealQueueLength();
 };
 
 }; // namespace

@@ -39,6 +39,7 @@ OBJS = \
     $O/MDS.o \
     $O/OSS.o \
     $O/OST.o \
+    $O/Sink.o \
     $O/Switch.o \
     $O/request_m.o
 

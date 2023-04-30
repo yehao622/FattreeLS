@@ -32,10 +32,17 @@ namespace fattree {
  * packet Request
  * {
  *     char work_type;
+ *     bool finished;
+ *     bool ckp_launched;
  *     short port_index;
- *     int64_t data_size;
+ *     uint32_t id;
+ *     uint32_t master_id;
+ *     uint32_t num_proc;
+ *     uint64_t data_size;
+ *     double proc_time;
  *     string src_addr;
  *     string des_addr;
+ *     string master_id_addr;
  *     string next_hop_addr;
  *     simtime_t generate_time;
  *     simtime_t arriveModule_time;
@@ -48,10 +55,17 @@ class Request : public ::omnetpp::cPacket
 {
   protected:
     char work_type = 0;
+    bool finished = false;
+    bool ckp_launched = false;
     short port_index = 0;
-    int64_t data_size = 0;
+    uint32_t id = 0;
+    uint32_t master_id = 0;
+    uint32_t num_proc = 0;
+    uint64_t data_size = 0;
+    double proc_time = 0;
     ::omnetpp::opp_string src_addr;
     ::omnetpp::opp_string des_addr;
+    ::omnetpp::opp_string master_id_addr;
     ::omnetpp::opp_string next_hop_addr;
     ::omnetpp::simtime_t generate_time = SIMTIME_ZERO;
     ::omnetpp::simtime_t arriveModule_time = SIMTIME_ZERO;
@@ -75,17 +89,38 @@ class Request : public ::omnetpp::cPacket
     virtual char getWork_type() const;
     virtual void setWork_type(char work_type);
 
+    virtual bool getFinished() const;
+    virtual void setFinished(bool finished);
+
+    virtual bool getCkp_launched() const;
+    virtual void setCkp_launched(bool ckp_launched);
+
     virtual short getPort_index() const;
     virtual void setPort_index(short port_index);
 
-    virtual int64_t getData_size() const;
-    virtual void setData_size(int64_t data_size);
+    virtual uint32_t getId() const;
+    virtual void setId(uint32_t id);
+
+    virtual uint32_t getMaster_id() const;
+    virtual void setMaster_id(uint32_t master_id);
+
+    virtual uint32_t getNum_proc() const;
+    virtual void setNum_proc(uint32_t num_proc);
+
+    virtual uint64_t getData_size() const;
+    virtual void setData_size(uint64_t data_size);
+
+    virtual double getProc_time() const;
+    virtual void setProc_time(double proc_time);
 
     virtual const char * getSrc_addr() const;
     virtual void setSrc_addr(const char * src_addr);
 
     virtual const char * getDes_addr() const;
     virtual void setDes_addr(const char * des_addr);
+
+    virtual const char * getMaster_id_addr() const;
+    virtual void setMaster_id_addr(const char * master_id_addr);
 
     virtual const char * getNext_hop_addr() const;
     virtual void setNext_hop_addr(const char * next_hop_addr);

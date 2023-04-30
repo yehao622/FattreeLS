@@ -29,6 +29,7 @@ class Switch : public cSimpleModule
     Switch();
     virtual ~Switch();
     bool checkPort(std::string);
+//    bool queueIsFull;
     uint64_t getDataSizeInQueue();
   protected:
     std::map<int, int64_t> queue_data_size; // <port, data_size_in_queue>
@@ -36,12 +37,14 @@ class Switch : public cSimpleModule
     cQueue* switch_buffer;
     simsignal_t qLenSignal;
     simsignal_t staySignal;
+    double waitingSignal;
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
     virtual int randChoose(std::string);
     virtual int findCN(std::string, std::string);
     virtual int findAggr(std::string);
+    int geatRealQueueLength();
 };
 
 }; // namespace

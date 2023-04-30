@@ -25,15 +25,16 @@ namespace fattree {
 
 class OST : public cSimpleModule
 {
-    public:
+  public:
     OST();
     virtual ~OST();
+//    bool queueIsFull;
     uint64_t getDataSizeInQueue();
   protected:
+    double waitingSignal;
     cQueue* ost_buffer;
     simsignal_t qLenSignal;
     simsignal_t staySignal;
-    simtime_t free_time;
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish();

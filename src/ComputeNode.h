@@ -1,14 +1,8 @@
-/*
- * ComputeNode.h
- *
- *  Created on: Feb 3, 2023
- *      Author: hao
- */
-
 #ifndef COMPUTENODE_H_
 #define COMPUTENODE_H_
 
 #include <omnetpp.h>
+#include "General.h"
 
 using namespace omnetpp;
 
@@ -23,20 +17,26 @@ class ComputeNode : public cSimpleModule
     ComputeNode();
     virtual ~ComputeNode();
   protected:
-    uint32_t send_cnt;
+    int gate_to_edge;
+    int gate_to_sink;
+    uint32_t idx;
     uint32_t receive_cnt;
     uint64_t total_data_size;
-    uint64_t total_read_size;
-    uint64_t total_write_size;
+    double waitingSignal;
+    cQueue* cn_buffer;
+    std::unordered_map<uint32_t, std::pair<Request*, uint32_t>> ckp_root_process; // <master_id, <total_number_checkpoint_process, number_finished_checkpoint_processes>>
+    std::unordered_set<uint32_t> ckp_ready;
+    simsignal_t qLenSignal;
     simsignal_t ThroughputSignal;
     simsignal_t rDurationSignal;
     simsignal_t wDurationSignal;
-//    simsignal_t rThroughputSignal;
-//    simsignal_t wThroughputSignal;
-//    std::vector<double> theory_rdelay_all_components, theory_wdelay_all_components;
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
+    void initMsg(Request*, uint32_t);
+    void setMsg(Request*);
+    bool checkCkpfinished(const uint32_t&);
+    std::unordered_set<std::string> selectCkpCNs();
 };
 
 }; // namespace

@@ -178,10 +178,17 @@ Request& Request::operator=(const Request& other)
 void Request::copy(const Request& other)
 {
     this->work_type = other.work_type;
+    this->finished = other.finished;
+    this->ckp_launched = other.ckp_launched;
     this->port_index = other.port_index;
+    this->id = other.id;
+    this->master_id = other.master_id;
+    this->num_proc = other.num_proc;
     this->data_size = other.data_size;
+    this->proc_time = other.proc_time;
     this->src_addr = other.src_addr;
     this->des_addr = other.des_addr;
+    this->master_id_addr = other.master_id_addr;
     this->next_hop_addr = other.next_hop_addr;
     this->generate_time = other.generate_time;
     this->arriveModule_time = other.arriveModule_time;
@@ -192,10 +199,17 @@ void Request::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->work_type);
+    doParsimPacking(b,this->finished);
+    doParsimPacking(b,this->ckp_launched);
     doParsimPacking(b,this->port_index);
+    doParsimPacking(b,this->id);
+    doParsimPacking(b,this->master_id);
+    doParsimPacking(b,this->num_proc);
     doParsimPacking(b,this->data_size);
+    doParsimPacking(b,this->proc_time);
     doParsimPacking(b,this->src_addr);
     doParsimPacking(b,this->des_addr);
+    doParsimPacking(b,this->master_id_addr);
     doParsimPacking(b,this->next_hop_addr);
     doParsimPacking(b,this->generate_time);
     doParsimPacking(b,this->arriveModule_time);
@@ -206,10 +220,17 @@ void Request::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->work_type);
+    doParsimUnpacking(b,this->finished);
+    doParsimUnpacking(b,this->ckp_launched);
     doParsimUnpacking(b,this->port_index);
+    doParsimUnpacking(b,this->id);
+    doParsimUnpacking(b,this->master_id);
+    doParsimUnpacking(b,this->num_proc);
     doParsimUnpacking(b,this->data_size);
+    doParsimUnpacking(b,this->proc_time);
     doParsimUnpacking(b,this->src_addr);
     doParsimUnpacking(b,this->des_addr);
+    doParsimUnpacking(b,this->master_id_addr);
     doParsimUnpacking(b,this->next_hop_addr);
     doParsimUnpacking(b,this->generate_time);
     doParsimUnpacking(b,this->arriveModule_time);
@@ -226,6 +247,26 @@ void Request::setWork_type(char work_type)
     this->work_type = work_type;
 }
 
+bool Request::getFinished() const
+{
+    return this->finished;
+}
+
+void Request::setFinished(bool finished)
+{
+    this->finished = finished;
+}
+
+bool Request::getCkp_launched() const
+{
+    return this->ckp_launched;
+}
+
+void Request::setCkp_launched(bool ckp_launched)
+{
+    this->ckp_launched = ckp_launched;
+}
+
 short Request::getPort_index() const
 {
     return this->port_index;
@@ -236,14 +277,54 @@ void Request::setPort_index(short port_index)
     this->port_index = port_index;
 }
 
-int64_t Request::getData_size() const
+uint32_t Request::getId() const
+{
+    return this->id;
+}
+
+void Request::setId(uint32_t id)
+{
+    this->id = id;
+}
+
+uint32_t Request::getMaster_id() const
+{
+    return this->master_id;
+}
+
+void Request::setMaster_id(uint32_t master_id)
+{
+    this->master_id = master_id;
+}
+
+uint32_t Request::getNum_proc() const
+{
+    return this->num_proc;
+}
+
+void Request::setNum_proc(uint32_t num_proc)
+{
+    this->num_proc = num_proc;
+}
+
+uint64_t Request::getData_size() const
 {
     return this->data_size;
 }
 
-void Request::setData_size(int64_t data_size)
+void Request::setData_size(uint64_t data_size)
 {
     this->data_size = data_size;
+}
+
+double Request::getProc_time() const
+{
+    return this->proc_time;
+}
+
+void Request::setProc_time(double proc_time)
+{
+    this->proc_time = proc_time;
 }
 
 const char * Request::getSrc_addr() const
@@ -264,6 +345,16 @@ const char * Request::getDes_addr() const
 void Request::setDes_addr(const char * des_addr)
 {
     this->des_addr = des_addr;
+}
+
+const char * Request::getMaster_id_addr() const
+{
+    return this->master_id_addr.c_str();
+}
+
+void Request::setMaster_id_addr(const char * master_id_addr)
+{
+    this->master_id_addr = master_id_addr;
 }
 
 const char * Request::getNext_hop_addr() const
@@ -312,10 +403,17 @@ class RequestDescriptor : public omnetpp::cClassDescriptor
     mutable const char **propertyNames;
     enum FieldConstants {
         FIELD_work_type,
+        FIELD_finished,
+        FIELD_ckp_launched,
         FIELD_port_index,
+        FIELD_id,
+        FIELD_master_id,
+        FIELD_num_proc,
         FIELD_data_size,
+        FIELD_proc_time,
         FIELD_src_addr,
         FIELD_des_addr,
+        FIELD_master_id_addr,
         FIELD_next_hop_addr,
         FIELD_generate_time,
         FIELD_arriveModule_time,
@@ -386,7 +484,7 @@ const char *RequestDescriptor::getProperty(const char *propertyName) const
 int RequestDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 9+base->getFieldCount() : 9;
+    return base ? 16+base->getFieldCount() : 16;
 }
 
 unsigned int RequestDescriptor::getFieldTypeFlags(int field) const
@@ -399,16 +497,23 @@ unsigned int RequestDescriptor::getFieldTypeFlags(int field) const
     }
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,    // FIELD_work_type
+        FD_ISEDITABLE,    // FIELD_finished
+        FD_ISEDITABLE,    // FIELD_ckp_launched
         FD_ISEDITABLE,    // FIELD_port_index
+        FD_ISEDITABLE,    // FIELD_id
+        FD_ISEDITABLE,    // FIELD_master_id
+        FD_ISEDITABLE,    // FIELD_num_proc
         FD_ISEDITABLE,    // FIELD_data_size
+        FD_ISEDITABLE,    // FIELD_proc_time
         FD_ISEDITABLE,    // FIELD_src_addr
         FD_ISEDITABLE,    // FIELD_des_addr
+        FD_ISEDITABLE,    // FIELD_master_id_addr
         FD_ISEDITABLE,    // FIELD_next_hop_addr
         FD_ISEDITABLE,    // FIELD_generate_time
         FD_ISEDITABLE,    // FIELD_arriveModule_time
         FD_ISEDITABLE,    // FIELD_leaveModule_time
     };
-    return (field >= 0 && field < 9) ? fieldTypeFlags[field] : 0;
+    return (field >= 0 && field < 16) ? fieldTypeFlags[field] : 0;
 }
 
 const char *RequestDescriptor::getFieldName(int field) const
@@ -421,16 +526,23 @@ const char *RequestDescriptor::getFieldName(int field) const
     }
     static const char *fieldNames[] = {
         "work_type",
+        "finished",
+        "ckp_launched",
         "port_index",
+        "id",
+        "master_id",
+        "num_proc",
         "data_size",
+        "proc_time",
         "src_addr",
         "des_addr",
+        "master_id_addr",
         "next_hop_addr",
         "generate_time",
         "arriveModule_time",
         "leaveModule_time",
     };
-    return (field >= 0 && field < 9) ? fieldNames[field] : nullptr;
+    return (field >= 0 && field < 16) ? fieldNames[field] : nullptr;
 }
 
 int RequestDescriptor::findField(const char *fieldName) const
@@ -438,14 +550,21 @@ int RequestDescriptor::findField(const char *fieldName) const
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     int baseIndex = base ? base->getFieldCount() : 0;
     if (strcmp(fieldName, "work_type") == 0) return baseIndex + 0;
-    if (strcmp(fieldName, "port_index") == 0) return baseIndex + 1;
-    if (strcmp(fieldName, "data_size") == 0) return baseIndex + 2;
-    if (strcmp(fieldName, "src_addr") == 0) return baseIndex + 3;
-    if (strcmp(fieldName, "des_addr") == 0) return baseIndex + 4;
-    if (strcmp(fieldName, "next_hop_addr") == 0) return baseIndex + 5;
-    if (strcmp(fieldName, "generate_time") == 0) return baseIndex + 6;
-    if (strcmp(fieldName, "arriveModule_time") == 0) return baseIndex + 7;
-    if (strcmp(fieldName, "leaveModule_time") == 0) return baseIndex + 8;
+    if (strcmp(fieldName, "finished") == 0) return baseIndex + 1;
+    if (strcmp(fieldName, "ckp_launched") == 0) return baseIndex + 2;
+    if (strcmp(fieldName, "port_index") == 0) return baseIndex + 3;
+    if (strcmp(fieldName, "id") == 0) return baseIndex + 4;
+    if (strcmp(fieldName, "master_id") == 0) return baseIndex + 5;
+    if (strcmp(fieldName, "num_proc") == 0) return baseIndex + 6;
+    if (strcmp(fieldName, "data_size") == 0) return baseIndex + 7;
+    if (strcmp(fieldName, "proc_time") == 0) return baseIndex + 8;
+    if (strcmp(fieldName, "src_addr") == 0) return baseIndex + 9;
+    if (strcmp(fieldName, "des_addr") == 0) return baseIndex + 10;
+    if (strcmp(fieldName, "master_id_addr") == 0) return baseIndex + 11;
+    if (strcmp(fieldName, "next_hop_addr") == 0) return baseIndex + 12;
+    if (strcmp(fieldName, "generate_time") == 0) return baseIndex + 13;
+    if (strcmp(fieldName, "arriveModule_time") == 0) return baseIndex + 14;
+    if (strcmp(fieldName, "leaveModule_time") == 0) return baseIndex + 15;
     return base ? base->findField(fieldName) : -1;
 }
 
@@ -459,16 +578,23 @@ const char *RequestDescriptor::getFieldTypeString(int field) const
     }
     static const char *fieldTypeStrings[] = {
         "char",    // FIELD_work_type
+        "bool",    // FIELD_finished
+        "bool",    // FIELD_ckp_launched
         "short",    // FIELD_port_index
-        "int64_t",    // FIELD_data_size
+        "uint32_t",    // FIELD_id
+        "uint32_t",    // FIELD_master_id
+        "uint32_t",    // FIELD_num_proc
+        "uint64_t",    // FIELD_data_size
+        "double",    // FIELD_proc_time
         "string",    // FIELD_src_addr
         "string",    // FIELD_des_addr
+        "string",    // FIELD_master_id_addr
         "string",    // FIELD_next_hop_addr
         "omnetpp::simtime_t",    // FIELD_generate_time
         "omnetpp::simtime_t",    // FIELD_arriveModule_time
         "omnetpp::simtime_t",    // FIELD_leaveModule_time
     };
-    return (field >= 0 && field < 9) ? fieldTypeStrings[field] : nullptr;
+    return (field >= 0 && field < 16) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **RequestDescriptor::getFieldPropertyNames(int field) const
@@ -552,10 +678,17 @@ std::string RequestDescriptor::getFieldValueAsString(omnetpp::any_ptr object, in
     Request *pp = omnetpp::fromAnyPtr<Request>(object); (void)pp;
     switch (field) {
         case FIELD_work_type: return long2string(pp->getWork_type());
+        case FIELD_finished: return bool2string(pp->getFinished());
+        case FIELD_ckp_launched: return bool2string(pp->getCkp_launched());
         case FIELD_port_index: return long2string(pp->getPort_index());
-        case FIELD_data_size: return int642string(pp->getData_size());
+        case FIELD_id: return ulong2string(pp->getId());
+        case FIELD_master_id: return ulong2string(pp->getMaster_id());
+        case FIELD_num_proc: return ulong2string(pp->getNum_proc());
+        case FIELD_data_size: return uint642string(pp->getData_size());
+        case FIELD_proc_time: return double2string(pp->getProc_time());
         case FIELD_src_addr: return oppstring2string(pp->getSrc_addr());
         case FIELD_des_addr: return oppstring2string(pp->getDes_addr());
+        case FIELD_master_id_addr: return oppstring2string(pp->getMaster_id_addr());
         case FIELD_next_hop_addr: return oppstring2string(pp->getNext_hop_addr());
         case FIELD_generate_time: return simtime2string(pp->getGenerate_time());
         case FIELD_arriveModule_time: return simtime2string(pp->getArriveModule_time());
@@ -577,10 +710,17 @@ void RequestDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field
     Request *pp = omnetpp::fromAnyPtr<Request>(object); (void)pp;
     switch (field) {
         case FIELD_work_type: pp->setWork_type(string2long(value)); break;
+        case FIELD_finished: pp->setFinished(string2bool(value)); break;
+        case FIELD_ckp_launched: pp->setCkp_launched(string2bool(value)); break;
         case FIELD_port_index: pp->setPort_index(string2long(value)); break;
-        case FIELD_data_size: pp->setData_size(string2int64(value)); break;
+        case FIELD_id: pp->setId(string2ulong(value)); break;
+        case FIELD_master_id: pp->setMaster_id(string2ulong(value)); break;
+        case FIELD_num_proc: pp->setNum_proc(string2ulong(value)); break;
+        case FIELD_data_size: pp->setData_size(string2uint64(value)); break;
+        case FIELD_proc_time: pp->setProc_time(string2double(value)); break;
         case FIELD_src_addr: pp->setSrc_addr((value)); break;
         case FIELD_des_addr: pp->setDes_addr((value)); break;
+        case FIELD_master_id_addr: pp->setMaster_id_addr((value)); break;
         case FIELD_next_hop_addr: pp->setNext_hop_addr((value)); break;
         case FIELD_generate_time: pp->setGenerate_time(string2simtime(value)); break;
         case FIELD_arriveModule_time: pp->setArriveModule_time(string2simtime(value)); break;
@@ -600,10 +740,17 @@ omnetpp::cValue RequestDescriptor::getFieldValue(omnetpp::any_ptr object, int fi
     Request *pp = omnetpp::fromAnyPtr<Request>(object); (void)pp;
     switch (field) {
         case FIELD_work_type: return pp->getWork_type();
+        case FIELD_finished: return pp->getFinished();
+        case FIELD_ckp_launched: return pp->getCkp_launched();
         case FIELD_port_index: return pp->getPort_index();
-        case FIELD_data_size: return pp->getData_size();
+        case FIELD_id: return (omnetpp::intval_t)(pp->getId());
+        case FIELD_master_id: return (omnetpp::intval_t)(pp->getMaster_id());
+        case FIELD_num_proc: return (omnetpp::intval_t)(pp->getNum_proc());
+        case FIELD_data_size: return (omnetpp::intval_t)(pp->getData_size());
+        case FIELD_proc_time: return pp->getProc_time();
         case FIELD_src_addr: return pp->getSrc_addr();
         case FIELD_des_addr: return pp->getDes_addr();
+        case FIELD_master_id_addr: return pp->getMaster_id_addr();
         case FIELD_next_hop_addr: return pp->getNext_hop_addr();
         case FIELD_generate_time: return pp->getGenerate_time().dbl();
         case FIELD_arriveModule_time: return pp->getArriveModule_time().dbl();
@@ -625,10 +772,17 @@ void RequestDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i,
     Request *pp = omnetpp::fromAnyPtr<Request>(object); (void)pp;
     switch (field) {
         case FIELD_work_type: pp->setWork_type(omnetpp::checked_int_cast<char>(value.intValue())); break;
+        case FIELD_finished: pp->setFinished(value.boolValue()); break;
+        case FIELD_ckp_launched: pp->setCkp_launched(value.boolValue()); break;
         case FIELD_port_index: pp->setPort_index(omnetpp::checked_int_cast<short>(value.intValue())); break;
-        case FIELD_data_size: pp->setData_size(omnetpp::checked_int_cast<int64_t>(value.intValue())); break;
+        case FIELD_id: pp->setId(omnetpp::checked_int_cast<uint32_t>(value.intValue())); break;
+        case FIELD_master_id: pp->setMaster_id(omnetpp::checked_int_cast<uint32_t>(value.intValue())); break;
+        case FIELD_num_proc: pp->setNum_proc(omnetpp::checked_int_cast<uint32_t>(value.intValue())); break;
+        case FIELD_data_size: pp->setData_size(omnetpp::checked_int_cast<uint64_t>(value.intValue())); break;
+        case FIELD_proc_time: pp->setProc_time(value.doubleValue()); break;
         case FIELD_src_addr: pp->setSrc_addr(value.stringValue()); break;
         case FIELD_des_addr: pp->setDes_addr(value.stringValue()); break;
+        case FIELD_master_id_addr: pp->setMaster_id_addr(value.stringValue()); break;
         case FIELD_next_hop_addr: pp->setNext_hop_addr(value.stringValue()); break;
         case FIELD_generate_time: pp->setGenerate_time(value.doubleValue()); break;
         case FIELD_arriveModule_time: pp->setArriveModule_time(value.doubleValue()); break;
